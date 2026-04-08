@@ -7,6 +7,13 @@ const cors = require('cors')
 app.use(cors())
 app.use(express.json())
 
+app.use(cors({
+  origin: "https://amazon-eight-ruby.vercel.app",
+  methods: ["GET", "POST", "PATCH", "DELETE"],
+  credentials: true
+}));
+
+app.options("*", cors());
 
 app.get('/', (req, res) => {
   res.send('Welcome to backend!!!')
