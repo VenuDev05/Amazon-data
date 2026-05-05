@@ -4,8 +4,7 @@ const port = 5001
 const cors = require('cors')
 
 
-app.use(cors())
-app.use(express.json())
+
 
 app.use(cors({
   origin: "https://amazon-eight-ruby.vercel.app",
@@ -13,7 +12,8 @@ app.use(cors({
   credentials: true
 }));
 
-app.options("*", cors());
+app.use(express.json())
+
 
 app.get('/', (req, res) => {
   res.send('Welcome to backend!!!')
@@ -36,6 +36,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     await client.connect();
+    
     const infoCollection = client.db("informationCenter").collection("info")
 
     app.post("/send", async (req, res) => {
@@ -122,6 +123,52 @@ async function run() {
       const deleteResult = await mobData.deleteOne(deleteFilter)
       res.status(200).json({ success: true, message: "ellam pochi poo", deleteResult })
     })
+
+    //Fashion database
+    const fasData = client.db("informationCenter").collection("fashionData")
+
+    app.post("/fasDataSend", async (req, res) => {
+      const pushData = req.body
+      const pushResult = await fasData.insertOne(pushData)
+      res.send(pushResult)
+    })
+
+
+    app.get("/fasDataReceive", async (req, res) => {
+      const getData = fasData.find()
+      const getResult = await getData.toArray()
+      res.send(getResult)
+    })
+
+    app.get("/fasDataList/:id", async (req, res) => {
+      const filterId = req.params.id
+      const filterData = { _id: new ObjectId(filterId) }
+      const filterResult = await fasData.findOne(filterData)
+      res.send(filterResult)
+    })
+
+    app.patch("/fasDataUpdate/:id", async (req, res) => {
+      const updateId = req.params.id
+      const updateData = req.body
+      const updateFilter = { _id: new ObjectId(updateId) }
+
+      const updateDoc = {
+        $set: {
+          ...updateData
+        },
+      }
+      const options = { upsert: true }
+      const updateResult = await fasData.updateOne(updateFilter, updateDoc, options)
+      res.send(updateResult)
+    })
+
+    app.delete("/fasDataDelete/:id", async (req, res) => {
+      const deleteId = req.params.id
+      const deleteFilter = { _id: new ObjectId(deleteId) }
+      const deleteResult = await fasData.deleteOne(deleteFilter)
+      res.status(200).json({ success: true, message: "ellam pochi poo", deleteResult })
+    })
+
 
     await client.db("admin").command({ ping: 1 });
     console.log("You just connected, when you are going to work?");
